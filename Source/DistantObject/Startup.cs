@@ -25,6 +25,7 @@
 		If not, see <https://www.gnu.org/licenses/>.
 */
 using KSPe.Annotations;
+using UniLinq;
 using UnityEngine;
 
 namespace DistantObject
@@ -40,7 +41,17 @@ namespace DistantObject
 				KSPe.Util.Compatibility.Check<Startup>();
 				KSPe.Util.Installation.Check<Startup>();
 				GameEvents.onGameSceneSwitchRequested.Add(OnGameSceneSwitchRequested);
-			}
+
+                // Instancier la bonne classe en fonction de la présence de Kopernicus
+                if (IsKopernicusInstalled())
+                {
+                    Globals.SolarSystem = new KopernicusSolarSystem();
+                }
+                else
+                {
+                    Globals.SolarSystem = new DefaultSolarSystem();
+                }
+            }
 			catch (KSPe.Util.InstallmentException e)
 			{
 				Log.error(e.ToShortMessage());
@@ -62,5 +73,11 @@ namespace DistantObject
 				a.LoadAndStartup("MeshEngine");
 			}
 		}
-	}
+
+        // Vérifier si Kopernicus est installé
+        private bool IsKopernicusInstalled()
+        {
+            return AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name == "Kopernicus");
+        }
+    }
 }
