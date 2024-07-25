@@ -1,6 +1,6 @@
 ﻿/*
 		This file is part of Distant Object Enhancement /L
-			© 2021-2023 LisiasT
+			© 2021-2024 LisiasT
 			© 2019-2021 TheDarkBadger
 			© 2014-2019 MOARdV
 			© 2014 Rubber Ducky
@@ -39,7 +39,7 @@ namespace DistantObject.Contract
 
 		internal static Interface CreateFor(Vessel vessel)
 		{
-			Type type = KSPe.Util.SystemTools.TypeFinder.FindByInterface(typeof(DistantObject.Contract.MeshEngine.Interface));
+			Type type = KSPe.Util.SystemTools.Type.Find.By(typeof(DistantObject.Contract.MeshEngine.Interface));
 			ConstructorInfo ctor = type.GetConstructor(new[] { typeof(Vessel) });
 			return (Interface) ctor.Invoke(new object[] { vessel });
 		}

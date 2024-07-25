@@ -1,6 +1,6 @@
 ﻿/*
 		This file is part of Distant Object Enhancement /L
-			© 2021-2023 LisiasT
+			© 2021-2024 LisiasT
 			© 2019-2021 TheDarkBadger
 			© 2014-2019 MOARdV
 			© 2014 Rubber Ducky
@@ -896,21 +896,20 @@ namespace DistantObject
                     long updateVar = stopwatch.ElapsedMilliseconds;
 #endif
 
-					foreach (VesselFlare vesselFlare in vesselFlares.Values)
+					
+					foreach (VesselFlare vesselFlare in vesselFlares.Values) try
 					{
-						try
-						{
-							vesselFlare.Update(camPos, camFOV);
-
-							if (vesselFlare.mesh.activeSelf)
-								this.CheckDraw(vesselFlare);
-						}
-						catch
-						{
-							// Something went drastically wrong.
-							bigHammer = true;
-						}
+						vesselFlare.Update(camPos, camFOV);
+						if (vesselFlare.mesh.activeSelf)
+							this.CheckDraw(vesselFlare);
 					}
+					catch (Exception e)
+					{
+						Log.dbg("Big hammer was activated due {:s}", e.Message);
+						// Something went drastically wrong.
+						bigHammer = true;
+					}
+
 #if SHOW_FIXEDUPDATE_TIMING
                     long vesselCheckdraw = stopwatch.ElapsedMilliseconds;
 #endif

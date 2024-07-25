@@ -1,6 +1,6 @@
 ﻿/*
 		This file is part of Distant Object Enhancement /L
-			© 2021-2023 LisiasT
+			© 2021-2024 LisiasT
 			© 2019-2021 TheDarkBadger
 			© 2014-2019 MOARdV
 			© 2014 Rubber Ducky
@@ -30,7 +30,8 @@ namespace DistantObject
 {
 	internal class Globals
 	{
-		static internal readonly string DistantObject = "Distant Object Enhancement v" + Version.Number;
+		static internal readonly string DistantObject = "Distant Object Enhancement";
+		static internal readonly string DistantObjectVersion = Version.Text;
 		internal const string SETTINGS_NAME = "Settings";
 		internal const string SETTINGS_FILE = SETTINGS_NAME + ".cfg";
 		static internal readonly string SETTINGS_DEFAULTS = "DistantObject";
