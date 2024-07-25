@@ -37,5 +37,6 @@ namespace DistantObject
 		static internal readonly string REFERENCE_CONFIG_PATHNAME = IO.Hierarchy<Startup>.GAMEDATA.Solve("PluginData", SETTINGS_FILE);
 		static internal readonly string CONFIG_DIRECTORY = IO.Hierarchy<Startup>.PLUGINDATA.Solve();
 		static internal readonly string CONFIG_PATHNAME = IO.Hierarchy<Startup>.PLUGINDATA.Solve(SETTINGS_FILE);
-	}
+        static internal ISolarSystem SolarSystem = null;
+    }
 }

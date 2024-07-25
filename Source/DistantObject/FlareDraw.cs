@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 
 using KSPe.Annotations;
+using Kopernicus.Components;
 
 using UnityEngine;
 
@@ -159,9 +160,8 @@ namespace DistantObject
 		public void Update(Vector3d camPos, float camFOV)
 		{
 			// Update Body Flare
-			Vector3d targetVectorToSun = FlightGlobals.Bodies[0].position - body.position;
+			Vector3d targetVectorToSun = Globals.SolarSystem.GetSunPosition() - body.position;
 			Vector3d targetVectorToCam = camPos - body.position;
-
 			double targetSunRelAngle = Vector3d.Angle(targetVectorToSun, targetVectorToCam);
 
 			cameraToBodyUnitVector = -targetVectorToCam.normalized;
@@ -727,9 +727,20 @@ namespace DistantObject
 		{
 			INSTANCE = this;
 
-			// DistantObject/Flare/model has extents of (0.5, 0.5, 0.0), a 1/2 meter wide square.
-			this.flare = GameDatabase.Instance.GetModel(MODEL);
-			Log.assert(() => null != this.flare, "Flare model {0} not found", MODEL);
+            this.flyoverTextStyle.fontSize = Settings.Instance.FlyOver.ScaledTextSize;
+            {
+                Font[] fonts = Resources.FindObjectsOfTypeAll<Font>();
+                foreach (Font f in fonts) if (f.dynamic)
+                    {
+                        Log.dbg("Found dynamic font: {0}", f.name);
+                        this.flyoverTextStyle.font = f;
+                        if (f.name.Equals(Settings.Instance.FlyOver.fontName)) break;
+                    }
+            }
+
+            // DistantObject/Flare/model has extents of (0.5, 0.5, 0.0), a 1/2 meter wide square.
+            this.flare = GameDatabase.Instance.GetModel(MODEL);
+			//Log.assert(() => null != this.flare, "Flare model {0} not found", MODEL);
 
 			Settings.Instance.Load();
 			Settings.Instance.Commit();
@@ -952,9 +963,10 @@ namespace DistantObject
 		{
 			Vector3 screenPos = this.cam.WorldToScreenPoint(showNameTransform.position);
 			flyoverTextPosition.x = screenPos.x;
-			flyoverTextPosition.y = Screen.height - screenPos.y - 20.0f;
-			flyoverTextStyle.normal.textColor = showNameColor;
-			GUI.Label(flyoverTextPosition, showNameString, flyoverTextStyle);
+            flyoverTextPosition.y = Screen.height - screenPos.y - (GameSettings.UI_SCALE * 20.0f);
+            flyoverTextStyle.normal.textColor = showNameColor;
+            flyoverTextStyle.fontSize = Settings.Instance.FlyOver.ScaledTextSize;
+            GUI.Label(flyoverTextPosition, showNameString, flyoverTextStyle);
 		}
 
 		//--------------------------------------------------------------------
