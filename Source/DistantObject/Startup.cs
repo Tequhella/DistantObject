@@ -42,7 +42,7 @@ namespace DistantObject
 				KSPe.Util.Installation.Check<Startup>();
 				GameEvents.onGameSceneSwitchRequested.Add(OnGameSceneSwitchRequested);
 
-                // Instancier la bonne classe en fonction de la présence de Kopernicus
+                // Instantiate the correct solar system based on the presence of Kopernicus
                 if (IsKopernicusInstalled())
                 {
                     Globals.SolarSystem = new KopernicusSolarSystem();
@@ -74,7 +74,7 @@ namespace DistantObject
 			}
 		}
 
-        // Vérifier si Kopernicus est installé
+        // Check if Kopernicus is installed
         private bool IsKopernicusInstalled()
         {
             return AssemblyLoader.loadedAssemblies.Any(a => a.assembly.GetName().Name == "Kopernicus");
