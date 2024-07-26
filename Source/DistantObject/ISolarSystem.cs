@@ -12,7 +12,7 @@ namespace DistantObject
         Vector3d GetSunPosition();
     }
 
-    // Implémentation par défaut
+    // Default Solar System implementation
     class DefaultSolarSystem : ISolarSystem
     {
         public Vector3d GetSunPosition()
@@ -21,7 +21,7 @@ namespace DistantObject
         }
     }
 
-    // Implémentation Kopernicus
+    // Kopernicus Solar System implementation
     class KopernicusSolarSystem : ISolarSystem
     {
         public Vector3d GetSunPosition()

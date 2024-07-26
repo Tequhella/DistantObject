@@ -459,7 +459,7 @@ namespace DistantObject
 		private void CheckDraw(VesselFlare vesselFlare) => this.CheckDraw(vesselFlare, vesselFlare.mesh.transform.position, vesselFlare.referenceShip.mainBody, (vesselFlare.referenceShip.vesselType == VesselType.Debris) ? FlareType.Debris : FlareType.Vessel);
 		private void CheckDraw(Flare flare, Vector3d position, CelestialBody referenceBody, FlareType flareType)
 		{
-			Vector3d targetVectorToSun = FlightGlobals.Bodies[0].position - position;
+			Vector3d targetVectorToSun = Globals.SolarSystem.GetSunPosition() - position;
 			Vector3d targetVectorToRef = referenceBody.position - position;
 			double targetRelAngle = Vector3d.Angle(targetVectorToSun, targetVectorToRef);
 			double targetDist = Vector3d.Distance(position, camPos);
@@ -548,7 +548,7 @@ namespace DistantObject
 		// Update atmosphereFactor and dimFactor
 		private void UpdateVar()
 		{
-			Vector3d sunBodyAngle = (FlightGlobals.Bodies[0].position - camPos).normalized;
+			Vector3d sunBodyAngle = (Globals.SolarSystem.GetSunPosition() - camPos).normalized;
 			double sunBodyDist = FlightGlobals.Bodies[0].GetAltitude(camPos) + FlightGlobals.Bodies[0].Radius;
 			double sunBodySize = Math.Acos(Math.Sqrt(Math.Pow(sunBodyDist, 2.0) - Math.Pow(FlightGlobals.Bodies[0].Radius, 2.0)) / sunBodyDist) * Mathf.Rad2Deg;
 
@@ -558,7 +558,7 @@ namespace DistantObject
 			{
 				double camAltitude = FlightGlobals.currentMainBody.GetAltitude(camPos);
 				double atmAltitude = FlightGlobals.currentMainBody.atmosphereDepth;
-				double atmCurrentBrightness = (Vector3d.Distance(camPos, FlightGlobals.Bodies[0].position) - Vector3d.Distance(FlightGlobals.currentMainBody.position, FlightGlobals.Bodies[0].position)) / (FlightGlobals.currentMainBody.Radius);
+				double atmCurrentBrightness = (Vector3d.Distance(camPos, Globals.SolarSystem.GetSunPosition()) - Vector3d.Distance(FlightGlobals.currentMainBody.position, Globals.SolarSystem.GetSunPosition())) / (FlightGlobals.currentMainBody.Radius);
 
 				if (camAltitude > (atmAltitude / 2.0) || atmCurrentBrightness > 0.15)
 				{
@@ -612,7 +612,7 @@ namespace DistantObject
 				bool isVisible = true;
 				for (int i = 0;i < bodyFlares.Count;++i)
 				{
-					if (bodyFlares[i].distanceFromCamera < sunBodyDist && bodyFlares[i].sizeInDegrees > sunBodySize && Vector3d.Angle(bodyFlares[i].cameraToBodyUnitVector, FlightGlobals.Bodies[0].position - camPos) < bodyFlares[i].sizeInDegrees)
+					if (bodyFlares[i].distanceFromCamera < sunBodyDist && bodyFlares[i].sizeInDegrees > sunBodySize && Vector3d.Angle(bodyFlares[i].cameraToBodyUnitVector, Globals.SolarSystem.GetSunPosition() - camPos) < bodyFlares[i].sizeInDegrees)
 					{
 						isVisible = false;
 						break;
@@ -867,7 +867,7 @@ namespace DistantObject
 					this.cam = FlightCamera.fetch.mainCamera;
 					this.camPos = this.cam.transform.position;
 
-					Vector3d targetVectorToCam = camPos - FlightGlobals.Bodies[0].position;
+					Vector3d targetVectorToCam = camPos - Globals.SolarSystem.GetSunPosition();
 
 					cameraToSunUnitVector = -targetVectorToCam.normalized;
 					sunDistanceFromCamera = targetVectorToCam.magnitude;

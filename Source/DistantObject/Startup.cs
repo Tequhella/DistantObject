@@ -46,10 +46,12 @@ namespace DistantObject
                 if (IsKopernicusInstalled())
                 {
                     Globals.SolarSystem = new KopernicusSolarSystem();
+					Log.force("Kopernicus detected, using KopernicusSolarSystem");
                 }
                 else
                 {
                     Globals.SolarSystem = new DefaultSolarSystem();
+					Log.force("Kopernicus not detected, using DefaultSolarSystem");
                 }
             }
 			catch (KSPe.Util.InstallmentException e)
