@@ -36,5 +36,6 @@ namespace DistantObject.SolarSystem.Kopernicus
 
 		Vector3d SolarSystemEngine.Interface.GetSunPosition() => KopernicusStar.Current.sun.position;
         double SolarSystemEngine.Interface.GetSunRadius() => KopernicusStar.Current.sun.Radius;
+        double SolarSystemEngine.Interface.GetAltitude(Vector3d worldPos) => KopernicusStar.Current.sun.GetAltitude(worldPos);
     }
 }
