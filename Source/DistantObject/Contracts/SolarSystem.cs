@@ -33,7 +33,9 @@ namespace DistantObject.Contract
 		public interface Interface
 		{
 			Vector3d GetSunPosition();
-		}
+			double GetSunRadius();
+            double GetAltitude(Vector3d worldPos);
+        }
 
 		private static Interface INSTANCE;
 		internal static Interface Instance => INSTANCE ?? (INSTANCE = Create()) ;

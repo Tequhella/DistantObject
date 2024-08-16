@@ -25,6 +25,7 @@
 		If not, see <https://www.gnu.org/licenses/>.
 */
 using System;
+using DistantObject.Contract;
 using KSPe.Annotations;
 using UnityEngine;
 
@@ -105,13 +106,13 @@ namespace DistantObject
 
 			// The Sun needs special handling
 			{
-				double sunRadius = FlightGlobals.Bodies[0].Radius;
-				double sunDist = FlightGlobals.Bodies[0].GetAltitude(camPos) + sunRadius;
+				double sunRadius = SolarSystemEngine.Instance.GetSunRadius();
+				double sunDist = SolarSystemEngine.Instance.GetAltitude(camPos) + sunRadius;
 				double sunAngularSize = Math.Acos((Math.Sqrt(sunDist * sunDist - sunRadius * sunRadius) / sunDist)) * (double)Mathf.Rad2Deg;
 
 				if (sunAngularSize > Settings.Instance.SkyboxBrightness.minimumSignificantBodySize)
 				{
-					Vector3d sunPosition = FlightGlobals.Bodies[0].position;
+					Vector3d sunPosition = SolarSystemEngine.Instance.GetSunPosition();
 
 					// CSAngle = Camera to Sun angle
 					double CSAngle = Math.Max(0.0, Vector3.Angle((sunPosition - camPos).normalized, camAngle) - sunAngularSize);
@@ -131,7 +132,7 @@ namespace DistantObject
 
 				{
 					Vector3d bodyPosition = FlightGlobals.Bodies[i].position;
-					Vector3d targetVectorToSun = FlightGlobals.Bodies[0].position - bodyPosition;
+					Vector3d targetVectorToSun = SolarSystemEngine.Instance.GetSunPosition() - bodyPosition;
 					Vector3d targetVectorToCam = camPos - bodyPosition;
 
 					double targetRelAngle = (float)Vector3d.Angle(targetVectorToSun, targetVectorToCam);
