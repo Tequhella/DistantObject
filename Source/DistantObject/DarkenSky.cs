@@ -104,33 +104,31 @@ namespace DistantObject
 
 			double targetColorScalar = 1.0;
 
-			// The Sun needs special handling
+            // The Sun needs special handling
+			double sunRadius = SolarSystemEngine.Instance.GetSunRadius();
+			double sunDist = SolarSystemEngine.Instance.GetAltitude(camPos) + sunRadius;
+			double sunAngularSize = Math.Acos((Math.Sqrt(sunDist * sunDist - sunRadius * sunRadius) / sunDist)) * (double)Mathf.Rad2Deg;
+
+            if (sunAngularSize > Settings.Instance.SkyboxBrightness.minimumSignificantBodySize)
 			{
-				double sunRadius = SolarSystemEngine.Instance.GetSunRadius();
-				double sunDist = SolarSystemEngine.Instance.GetAltitude(camPos) + sunRadius;
-				double sunAngularSize = Math.Acos((Math.Sqrt(sunDist * sunDist - sunRadius * sunRadius) / sunDist)) * (double)Mathf.Rad2Deg;
+				Vector3d sunPosition = SolarSystemEngine.Instance.GetSunPosition();
 
-				if (sunAngularSize > Settings.Instance.SkyboxBrightness.minimumSignificantBodySize)
-				{
-					Vector3d sunPosition = SolarSystemEngine.Instance.GetSunPosition();
+				// CSAngle = Camera to Sun angle
+				double CSAngle = Math.Max(0.0, Vector3.Angle((sunPosition - camPos).normalized, camAngle) - sunAngularSize);
+				CSAngle = 1.0 - Math.Min(1.0, Math.Max(0.0, (CSAngle - (camFov / 2.0))) / (camFov / 4.0));
 
-					// CSAngle = Camera to Sun angle
-					double CSAngle = Math.Max(0.0, Vector3.Angle((sunPosition - camPos).normalized, camAngle) - sunAngularSize);
-					CSAngle = 1.0 - Math.Min(1.0, Math.Max(0.0, (CSAngle - (camFov / 2.0))) / (camFov / 4.0));
-
-					targetColorScalar = 1.0 - (Math.Sqrt(sunAngularSize) * CSAngle);
-				}
+				targetColorScalar = 1.0 - (Math.Sqrt(sunAngularSize) * CSAngle);
 			}
 
-			for (int i = 1; i < FlightGlobals.Bodies.Count; ++i)
+            for (int i = 1; i < FlightGlobals.Bodies.Count; ++i)
             {
                 double bodyRadius = FlightGlobals.Bodies[i].Radius;
                 double bodyDist = FlightGlobals.Bodies[i].GetAltitude(camPos) + bodyRadius;
 				double bodySize = Math.Acos((Math.Sqrt(bodyDist * bodyDist - bodyRadius * bodyRadius) / bodyDist)) * (double)Mathf.Rad2Deg;
 
-				if (bodySize < Settings.Instance.SkyboxBrightness.minimumSignificantBodySize) continue;
+                if (bodySize < Settings.Instance.SkyboxBrightness.minimumSignificantBodySize) continue;
 
-				{
+				{ 
 					Vector3d bodyPosition = FlightGlobals.Bodies[i].position;
 					Vector3d targetVectorToSun = SolarSystemEngine.Instance.GetSunPosition() - bodyPosition;
 					Vector3d targetVectorToCam = camPos - bodyPosition;
@@ -144,7 +142,14 @@ namespace DistantObject
 					CBAngle = 1.0 - Math.Min(1.0, Math.Max(0.0, (CBAngle - (camFov / 2.0)) - 5.0) / (camFov / 4.0));
 					bodySize = Math.Min(bodySize, Settings.Instance.SkyboxBrightness.referenceBodySize);
 
-					double colorScalar = 1.0 - (targetRelAngle * (Math.Sqrt(bodySize / Settings.Instance.SkyboxBrightness.referenceBodySize)) * CBAngle);
+                    // if the sun is behind the body and is smaller than the body, don't darken the sky
+                    if (Vector3d.Angle(targetVectorToSun, targetVectorToCam) > 90.0 && sunAngularSize < bodyRadius)
+                    {
+                        targetColorScalar = 1.0;
+                        break;
+                    }
+
+                    double colorScalar = 1.0 - (targetRelAngle * (Math.Sqrt(bodySize / Settings.Instance.SkyboxBrightness.referenceBodySize)) * CBAngle);
 					targetColorScalar = Math.Min(targetColorScalar, colorScalar);
 				}
 			}
