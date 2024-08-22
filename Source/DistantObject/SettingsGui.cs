@@ -26,6 +26,7 @@
 */
 using UnityEngine;
 using KSP.UI.Screens;
+using System;
 
 namespace DistantObject
 {
@@ -76,6 +77,7 @@ namespace DistantObject
 	partial class SettingsGui
     {
         protected Rect windowPos = new Rect(Screen.width / 4, Screen.height / 4, 10f, 10f);
+		protected Vector2 scrollViewPosition = new Vector2();
 
         private static bool activated = false;
         private bool isActivated = false;
@@ -97,6 +99,12 @@ namespace DistantObject
 
 			// Create local copies of the values, so we're not editing the
 			// config file until the user presses "Apply"
+
+			{
+				Settings.FlyOverClass b = buffer.FlyOver;
+				b.textSize = Settings.Instance.FlyOver.textSize;
+				b.fontName = Settings.Instance.FlyOver.fontName;
+			}
 			{
 				Settings.DistantFlareClass b = buffer.DistantFlare;
 				b.flaresEnabled = Settings.Instance.DistantFlare.flaresEnabled;
@@ -235,15 +243,48 @@ namespace DistantObject
             styleWindow.padding.bottom = 4;
             styleWindow.padding.right = 4;
 
+			GUILayoutOption guiwidth200 = GUILayout.Width(200);
+			GUILayoutOption guiwidth220 = GUILayout.Width(220);
+
             GUILayout.BeginVertical();
+			this.scrollViewPosition = GUILayout.BeginScrollView(this.scrollViewPosition, false, true);
 
             GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-			GUIStyle style = GUI.skin.GetStyle("label");
+			GUIStyle style = new GUIStyle(GUI.skin.GetStyle("label"));
 			style.alignment = TextAnchor.MiddleRight;
 			GUILayout.Label(Globals.DistantObjectVersion, style);
             GUILayout.EndHorizontal();
 
-            //--- Flare Rendering --------------------------------------------
+			//--- Fly Over Test --------------------------------------------
+			{
+				Settings.FlyOverClass b = buffer.FlyOver;
+				GUILayout.BeginVertical("Fly Over Text", new GUIStyle(GUI.skin.window));
+
+				GUILayout.Label("Font Size/Name");
+
+				GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
+				b.textSize = (int) GUILayout.HorizontalSlider(b.textSize, 8f, 64f, guiwidth200);
+				GUILayout.Label(string.Format("{0:0}", b.textSize));
+				GUILayout.EndHorizontal();
+
+				{
+					GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
+					Font[] fonts = this.buffer.FlyOver.fonts.ToArray();
+					int index = this.fontIndexFindByName(b.fontName, fonts);
+					index = (int) GUILayout.HorizontalSlider(index, 0, fonts.Length-1, guiwidth200);
+					b.fontName = fonts[index].name;
+					GUILayout.Label(b.fontName);
+					GUILayout.EndHorizontal();
+				}
+
+				GUILayout.EndVertical();
+			}
+
+			GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
+			GUILayout.Label("");
+			GUILayout.EndHorizontal();
+
+			//--- Flare Rendering --------------------------------------------
 			{
 				Settings.DistantFlareClass b = buffer.DistantFlare;
 				GUILayout.BeginVertical("Flare Rendering", new GUIStyle(GUI.skin.window));
@@ -261,7 +302,7 @@ namespace DistantObject
 					GUILayout.Label("Flare Saturation");
 					GUILayout.EndHorizontal();
 					GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-					b.flareSaturation = GUILayout.HorizontalSlider(b.flareSaturation, 0f, 1f, GUILayout.Width(220));
+					b.flareSaturation = GUILayout.HorizontalSlider(b.flareSaturation, 0f, 1f, guiwidth220);
 					GUILayout.Label(string.Format("{0:0}", 100 * b.flareSaturation) + "%");
 					GUILayout.EndHorizontal();
 
@@ -269,7 +310,7 @@ namespace DistantObject
 					GUILayout.Label("Flare Size");
 					GUILayout.EndHorizontal();
 					GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-					b.flareSize = GUILayout.HorizontalSlider(b.flareSize, 0.5f, 1.5f, GUILayout.Width(220));
+					b.flareSize = GUILayout.HorizontalSlider(b.flareSize, 0.5f, 1.5f, guiwidth220);
 					GUILayout.Label(string.Format("{0:0}", 100 * b.flareSize) + "%");
 					GUILayout.EndHorizontal();
 
@@ -277,7 +318,7 @@ namespace DistantObject
 					GUILayout.Label("Flare Brightness");
 					GUILayout.EndHorizontal();
 					GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-					b.flareBrightness = GUILayout.HorizontalSlider(b.flareBrightness, 0.0f, 1.0f, GUILayout.Width(220));
+					b.flareBrightness = GUILayout.HorizontalSlider(b.flareBrightness, 0.0f, 1.0f, guiwidth220);
 					GUILayout.Label(string.Format("{0:0}", 100 * b.flareBrightness) + "%");
 					GUILayout.EndHorizontal();
 
@@ -291,7 +332,7 @@ namespace DistantObject
 						GUILayout.Label("Debris Brightness");
 						GUILayout.EndHorizontal();
 						GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-						b.debrisBrightness = GUILayout.HorizontalSlider(b.debrisBrightness, 0f, 1f, GUILayout.Width(220));
+						b.debrisBrightness = GUILayout.HorizontalSlider(b.debrisBrightness, 0f, 1f, guiwidth220);
 						GUILayout.Label(string.Format("{0:0}", 100 * b.debrisBrightness) + "%");
 						GUILayout.EndHorizontal();
 					}
@@ -318,7 +359,7 @@ namespace DistantObject
 					GUILayout.Label("Max Distance to Render");
 					GUILayout.EndHorizontal();
 					GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-					b.maxDistance = GUILayout.HorizontalSlider(b.maxDistance, 2500f, Settings.Instance.Defaults.DistantVessel.maxDistance, GUILayout.Width(200));
+					b.maxDistance = GUILayout.HorizontalSlider(b.maxDistance, 2500f, Settings.Instance.Defaults.DistantVessel.maxDistance, guiwidth200);
 					GUILayout.Label(string.Format("{0:0}", b.maxDistance) + "m");
 					GUILayout.EndHorizontal();
 
@@ -358,7 +399,7 @@ namespace DistantObject
 				GUILayout.EndHorizontal();
 
 				GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-				b.maxBrightness = GUILayout.HorizontalSlider((float)b.maxBrightness, 0f, 1f, GUILayout.Width(220));
+				b.maxBrightness = GUILayout.HorizontalSlider((float)b.maxBrightness, 0f, 1f, guiwidth220);
 				GUILayout.Label(string.Format("{0:0}%", 100 * b.maxBrightness));
 				GUILayout.EndHorizontal();
 
@@ -366,7 +407,7 @@ namespace DistantObject
 				GUILayout.Label("Reference Body Size");
 				GUILayout.EndHorizontal();
 				GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-				b.referenceBodySize = GUILayout.HorizontalSlider((float)b.referenceBodySize, 1f, 100f, GUILayout.Width(220));
+				b.referenceBodySize = GUILayout.HorizontalSlider((float)b.referenceBodySize, 1f, 100f, guiwidth220);
 				GUILayout.Label(string.Format("{0:0.0}", b.referenceBodySize));
 				GUILayout.EndHorizontal();
 
@@ -374,7 +415,7 @@ namespace DistantObject
 				GUILayout.Label("Minimum Significant Body Size");
 				GUILayout.EndHorizontal();
 				GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-				b.minimumSignificantBodySize = GUILayout.HorizontalSlider((float)b.minimumSignificantBodySize, 1f, 180f, GUILayout.Width(220));
+				b.minimumSignificantBodySize = GUILayout.HorizontalSlider((float)b.minimumSignificantBodySize, 1f, 180f, guiwidth220);
 				GUILayout.Label(string.Format("{0:0.0}", b.minimumSignificantBodySize));
 				GUILayout.EndHorizontal();
 
@@ -382,7 +423,7 @@ namespace DistantObject
 				GUILayout.Label("Minimum Target Relative Angle");
 				GUILayout.EndHorizontal();
 				GUILayout.BeginHorizontal(GUILayout.ExpandWidth(false));
-				b.minimumTargetRelativeAngle = GUILayout.HorizontalSlider((float)b.minimumTargetRelativeAngle, 1f, 180f, GUILayout.Width(220));
+				b.minimumTargetRelativeAngle = GUILayout.HorizontalSlider((float)b.minimumTargetRelativeAngle, 1f, 180f, guiwidth220);
 				GUILayout.Label(string.Format("{0:0.0}", b.minimumTargetRelativeAngle));
 				GUILayout.EndHorizontal();
 
@@ -427,11 +468,20 @@ namespace DistantObject
             }
             GUILayout.EndHorizontal();
 
-            GUILayout.EndVertical();
+			GUILayout.EndScrollView();
+			GUILayout.EndVertical();
             GUI.DragWindow();
         }
 
-        internal void drawGUI()
+		private int fontIndexFindByName(string fontName, Font[] fonts)
+		{
+			int r = 0;
+			for (; r < fonts.Length; r++)
+				if (fonts[r].name.Equals(fontName)) return r;
+			return 0;
+		}
+
+		internal void drawGUI()
         {
             if (HighLogic.LoadedScene == GameScenes.SPACECENTER || HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
@@ -441,7 +491,8 @@ namespace DistantObject
                     {
                         ReadSettings();
                     }
-                    windowPos = GUILayout.Window(-5234628, windowPos, mainGUI, Globals.DistantObject + " Settings", GUILayout.Width(300), GUILayout.Height(200));
+
+                    windowPos = GUILayout.Window(-5234628, windowPos, mainGUI, Globals.DistantObject + " Settings", GUILayout.Width(320), GUILayout.Height(600));
                 }
                 isActivated = activated;
             }
