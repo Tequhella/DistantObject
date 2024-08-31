@@ -37,5 +37,6 @@ namespace DistantObject.SolarSystem.Stock
 		Vector3d SolarSystemEngine.Interface.GetSunPosition() => FlightGlobals.Bodies[0].position;
         double SolarSystemEngine.Interface.GetSunRadius() => FlightGlobals.Bodies[0].Radius;
         double SolarSystemEngine.Interface.GetAltitude(Vector3d worldPos) => FlightGlobals.Bodies[0].GetAltitude(worldPos);
+        CelestialBody SolarSystemEngine.Interface.GetSun() => FlightGlobals.Bodies[0];
     }
 }

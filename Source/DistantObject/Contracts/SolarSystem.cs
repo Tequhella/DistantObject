@@ -35,6 +35,8 @@ namespace DistantObject.Contract
 			Vector3d GetSunPosition();
 			double GetSunRadius();
             double GetAltitude(Vector3d worldPos);
+
+            CelestialBody GetSun();
         }
 
 		private static Interface INSTANCE;

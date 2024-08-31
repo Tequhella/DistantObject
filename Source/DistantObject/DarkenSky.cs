@@ -25,6 +25,7 @@
 		If not, see <https://www.gnu.org/licenses/>.
 */
 using System;
+using System.Collections.Generic;
 using DistantObject.Contract;
 using KSPe.Annotations;
 using UnityEngine;
@@ -105,7 +106,7 @@ namespace DistantObject
 			double targetColorScalar = 1.0;
 
             // The Sun needs special handling
-			double sunRadius = SolarSystemEngine.Instance.GetSunRadius();
+            double sunRadius = SolarSystemEngine.Instance.GetSunRadius();
 			double sunDist = SolarSystemEngine.Instance.GetAltitude(camPos) + sunRadius;
 			double sunAngularSize = Math.Acos((Math.Sqrt(sunDist * sunDist - sunRadius * sunRadius) / sunDist)) * (double)Mathf.Rad2Deg;
 
@@ -120,11 +121,17 @@ namespace DistantObject
 				targetColorScalar = 1.0 - (Math.Sqrt(sunAngularSize) * CSAngle);
 			}
 
+			// Create a list of target color scalars
+			List<double> targetColorScalarsList = new List<double> { targetColorScalar };
+
             for (int i = 1; i < FlightGlobals.Bodies.Count; ++i)
             {
+				if (FlightGlobals.Bodies[i] == SolarSystemEngine.Instance.GetSun()) continue;
+                
                 double bodyRadius = FlightGlobals.Bodies[i].Radius;
                 double bodyDist = FlightGlobals.Bodies[i].GetAltitude(camPos) + bodyRadius;
 				double bodySize = Math.Acos((Math.Sqrt(bodyDist * bodyDist - bodyRadius * bodyRadius) / bodyDist)) * (double)Mathf.Rad2Deg;
+				
 
                 if (bodySize < Settings.Instance.SkyboxBrightness.minimumSignificantBodySize) continue;
 
@@ -134,30 +141,32 @@ namespace DistantObject
 					Vector3d targetVectorToCam = camPos - bodyPosition;
 
 					double targetRelAngle = (float)Vector3d.Angle(targetVectorToSun, targetVectorToCam);
-					targetRelAngle = Math.Max(targetRelAngle, bodySize);
+                    targetRelAngle = Math.Max(targetRelAngle, bodySize);
 					targetRelAngle = Math.Min(targetRelAngle, Settings.Instance.SkyboxBrightness.minimumTargetRelativeAngle);
 					targetRelAngle = 1.0 - ((targetRelAngle - bodySize) / (Settings.Instance.SkyboxBrightness.minimumTargetRelativeAngle - bodySize));
 
 					double CBAngle = Math.Max(0.0, Vector3.Angle((bodyPosition - camPos).normalized, camAngle) - bodySize);
 					CBAngle = 1.0 - Math.Min(1.0, Math.Max(0.0, (CBAngle - (camFov / 2.0)) - 5.0) / (camFov / 4.0));
-					bodySize = Math.Min(bodySize, Settings.Instance.SkyboxBrightness.referenceBodySize);
-
-                    // if the sun is behind the body and is smaller than the body, don't darken the sky
-                    if (Vector3d.Angle(targetVectorToSun, targetVectorToCam) > 90.0 && sunAngularSize < bodyRadius)
-                    {
-                        targetColorScalar = 1.0;
-                        break;
-                    }
+                    bodySize = Math.Min(bodySize, Settings.Instance.SkyboxBrightness.referenceBodySize);
 
                     double colorScalar = 1.0 - (targetRelAngle * (Math.Sqrt(bodySize / Settings.Instance.SkyboxBrightness.referenceBodySize)) * CBAngle);
-					targetColorScalar = Math.Min(targetColorScalar, colorScalar);
+                    targetColorScalarsList.Add(Math.Min(targetColorScalar, colorScalar));
 				}
 			}
 			{
-				float c = (float)Settings.Instance.SkyboxBrightness.maxBrightness;
+                // Find the maximum target color scalar
+                foreach (var colorScalar in targetColorScalarsList)
+                {
+                    targetColorScalar = Math.Max(targetColorScalar, colorScalar);
+                }
+
+                float c = (float)Settings.Instance.SkyboxBrightness.maxBrightness;
 				Color color = new Color(c,c,c) * (float)targetColorScalar;
 				GalaxyCubeControl.Instance.maxGalaxyColor = color;
-			}
+
+				targetColorScalarsList.Clear();
+				
+            }
         }
 
 		internal void SetActiveTo(bool renderVessels)
